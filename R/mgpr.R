@@ -1187,12 +1187,20 @@ kfold_mgpr <- function(mgpr, newdatax = NULL, credinter = NULL,
     mu_Y <- apply(t(mod1$trainx), 2, FUN = mod1$meanf)
     # precomputed parts of prediction equations
     if (nx1 == 1) {
-      mod1$predM1 <- chol2inv(chol(as.vector(mod1$Cy) * mod1$K +
-                                     mod1$E * mod1$Ie))
+      # mod1$predM1 <- chol2inv(chol(as.vector(mod1$Cy) * mod1$K +
+      #                                mod1$E * mod1$Ie))
+      mod1$predM1 <- compute_predM1_rcpp(as.vector(mod1$Cy), 
+                                         mod1$K,
+                                         mod1$E,
+                                         mod1$Ie)
       mod1$predM2 <- mod1$predM1 %*% as.vector(mod1$trainy - mu_Y)
     } else {
-      mod1$predM1 <- chol2inv(chol(kronecker(mod1$Cy, mod1$K) +
-                                            kronecker(mod1$E, mod1$Ie)))
+      # mod1$predM1 <- chol2inv(chol(kronecker(mod1$Cy, mod1$K) +
+      #                                       kronecker(mod1$E, mod1$Ie)))
+      mod1$predM1 <- compute_predM1_rcpp(mod1$Cy, 
+                                         mod1$K,
+                                         mod1$E,
+                                         mod1$Ie)
       mod1$predM2 <- mod1$predM1 %*% as.vector(mod1$trainy - t(mu_Y))
     }
     
