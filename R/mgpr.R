@@ -83,6 +83,11 @@
 #' )
 #' @import Matrix
 #' @import optimization
+#' @import RcppEigen
+#' @import Rcpp
+#' 
+#' @useDynLib mgpr, .registration = TRUE
+#' 
 #' @export
 mgpr <- function(datay,
                  datax,
@@ -416,16 +421,26 @@ mgpr <- function(datay,
       
       # precomputed parts of prediction equations
       if (nx == 1) {
-        return_list$predM1 <- chol2inv(chol(as.vector(return_list$Cy) * 
-                                              return_list$K +
-                                              return_list$E * return_list$Ie))
+        # return_list$predM1 <- chol2inv(chol(as.vector(return_list$Cy) * 
+        #                                       return_list$K +
+        #                                       return_list$E * return_list$Ie))
+        # Lets use the same function with nx == 1 and nx != 1, faster than base
+        return_list$predM1 <- compute_predM1_rcpp(as.vector(return_list$Cy), 
+                                                  return_list$K,
+                                                  return_list$E,
+                                                  return_list$Ie)
         return_list$predM2 <- return_list$predM1 %*% 
                                        as.vector(return_list$trainy - mu_Y)
       } else {
-        return_list$predM1 <- chol2inv(chol(kronecker(return_list$Cy, 
-                                                      return_list$K) +
-                                              kronecker(return_list$E, 
-                                                        return_list$Ie)))
+        # return_list$predM1 <- chol2inv(chol(kronecker(return_list$Cy, 
+        #                                               return_list$K) +
+        #                                       kronecker(return_list$E, 
+        #                                                 return_list$Ie)))
+        return_list$predM1 <- compute_predM1_rcpp(return_list$Cy, 
+                                                  return_list$K,
+                                                  return_list$E,
+                                                  return_list$Ie)
+        
         return_list$predM2 <- return_list$predM1 %*% 
                                        as.vector(return_list$trainy - t(mu_Y))
       }
@@ -475,16 +490,24 @@ mgpr <- function(datay,
     }
 
     if (nx == 1) {
-      return_list$predM1 <- chol2inv(chol(as.vector(return_list$Cy) * 
-                                            return_list$K +
-                                            return_list$E * return_list$Ie))
+      # return_list$predM1 <- chol2inv(chol(as.vector(return_list$Cy) * 
+      #                                       return_list$K +
+      #                                       return_list$E * return_list$Ie))
+      return_list$predM1 <- compute_predM1_rcpp(as.vector(return_list$Cy), 
+                                                return_list$K,
+                                                return_list$E,
+                                                return_list$Ie)
       return_list$predM2 <- return_list$predM1 %*% 
                                      as.vector(return_list$trainy - mu_Y)
     } else {
-      return_list$predM1 <- chol2inv(chol(kronecker(return_list$Cy, 
-                                                    return_list$K) +
-                                            kronecker(return_list$E, 
-                                                      return_list$Ie)))
+      # return_list$predM1 <- chol2inv(chol(kronecker(return_list$Cy, 
+      #                                               return_list$K) +
+      #                                       kronecker(return_list$E, 
+      #                                                 return_list$Ie)))
+      return_list$predM1 <- compute_predM1_rcpp(return_list$Cy, 
+                                                return_list$K,
+                                                return_list$E,
+                                                return_list$Ie)
       return_list$predM2 <- return_list$predM1 %*% 
                                      as.vector(return_list$trainy - t(mu_Y))
     }
@@ -510,16 +533,25 @@ mgpr <- function(datay,
     }
     
     if (nx == 1) {
-      return_list$predM1 <- chol2inv(chol(as.vector(return_list$Cy) * 
-                                            return_list$K +
-                                            return_list$E * return_list$Ie))
+      # return_list$predM1 <- chol2inv(chol(as.vector(return_list$Cy) * 
+      #                                       return_list$K +
+      #                                       return_list$E * return_list$Ie))
+      
+      return_list$predM1 <- compute_predM1_rcpp(as.vector(return_list$Cy), 
+                                                return_list$K,
+                                                return_list$E,
+                                                return_list$Ie)
       return_list$predM2 <- return_list$predM1 %*% 
                                      as.vector(return_list$trainy - mu_Y)
     } else {
-      return_list$predM1 <- chol2inv(chol(kronecker(return_list$Cy, 
-                                                    return_list$K) +
-                                            kronecker(return_list$E, 
-                                                      return_list$Ie)))
+      # return_list$predM1 <- chol2inv(chol(kronecker(return_list$Cy, 
+      #                                               return_list$K) +
+      #                                       kronecker(return_list$E, 
+      #                                                 return_list$Ie)))
+      return_list$predM1 <- compute_predM1_rcpp(return_list$Cy, 
+                                                return_list$K,
+                                                return_list$E,
+                                                return_list$Ie)
       return_list$predM2 <- return_list$predM1 %*% 
                                     as.vector(return_list$trainy - t(mu_Y))
     }
